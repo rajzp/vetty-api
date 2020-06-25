@@ -1,0 +1,93 @@
+openapi: 3.0.0
+info:
+  title: Vetty API
+  version: '1.0'
+  contact:
+    url: 'https://vetty.co'
+    email: hello@vetty.co
+    name: Vetty Support
+  description: |-
+    Vetty Restful API allows customers to seamlessly integrate background checks into
+    their workflow and manage the process and get notifications from customer’s
+    system.
+servers:
+  - url: 'https://demo.api.vetty.co'
+    description: Demo
+  - url: 'https://api.vetty.co'
+    description: Prod
+tags:
+  - name: applicant
+  - name: document
+paths:
+  /applicants:
+    post:
+      summary: ''
+      operationId: create-applicant
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Applicant'
+        '400':
+          description: Bad Request
+      tags:
+        - applicant
+      description: Represents a background check invitation. The applicant will receive an email to submit their information.
+      security:
+        - API Key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Applicant'
+components:
+  schemas:
+    Applicant:
+      title: Applicant
+      type: object
+      properties:
+        id:
+          type: string
+          description: |-
+            U
+            nique identifier for the applicant
+          example: cdf2f5be-b67e-11ea-b3de-0242ac130004
+        title:
+          type: string
+          description: "Applicant's title, valid values are Mr, Mrs, Miss and Ms."
+          enum:
+            - Mr
+            - Mrs
+            - Miss
+            - Ms
+          example: Mr
+        first_name:
+          type: string
+          description: "Applicant's first name"
+          example: John
+          minLength: 3
+          maxLength: 50
+        middle_name:
+          type: string
+          description: "Applicant's middle name"
+          minLength: 0
+          maxLength: 50
+        last_name:
+          type: string
+          description: "Applicant's last name"
+          example: Doe
+          minLength: 2
+          maxLength: 50
+      required:
+        - title
+        - first_name
+        - last_name
+      description: "An\_applicant\_is the individual on who the check is being performed. To initiate a check an applicant must first be created. Applicants can be retrieved and listed."
+  securitySchemes:
+    API Key:
+      type: http
+      scheme: basic
+security:
+  - API Key - 1: []
