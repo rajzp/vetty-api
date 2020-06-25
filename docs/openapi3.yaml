@@ -9,7 +9,7 @@ info:
   description: |-
     Vetty Restful API allows customers to seamlessly integrate background checks into
     their workflow and manage the process and get notifications from customer’s
-    system.
+    system test.
 servers:
   - url: 'https://demo.api.vetty.co'
     description: Demo
