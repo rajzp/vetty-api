@@ -84,7 +84,7 @@ components:
         - title
         - first_name
         - last_name
-      description: "An\_applicant\_is the individual on who the check is being performed. To initiate a check an applicant must first be created. Applicants can be retrieved and listed."
+      description: "An applicant is the individual on who the check is being performed. To initiate a check an applicant must first be created. Applicants can be retrieved and listed."
   securitySchemes:
     API Key:
       type: http
