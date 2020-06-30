@@ -14,6 +14,9 @@ servers:
     description: Prod
 tags:
   - name: applicant
+    description: An applicant is  the individual on who the check is being performed. To initiate a check an applicant must first be created. Applicants can be retrieved and listed.
+  - name: packages
+    description: Packages are  predefined background check types. Common check types are check driving records or criminal records in various jurisdictions (like count, state, or federal courts). Packages are unique to your account and are used to standardize the checks your account uses to check individuals based on your company or organization's needs.
 paths:
   /applicants:
     post:
