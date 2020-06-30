@@ -6,10 +6,7 @@ info:
     url: 'https://vetty.co'
     email: hello@vetty.co
     name: Vetty Support
-  description: |-
-    Vetty Restful API allows customers to seamlessly integrate background checks into
-    their workflow and manage the process and get notifications from customer’s
-    system test.
+  description: "Vetty Restful API allows customers to seamlessly integrate background checks into their workflow and manage the process and get notifications from customer’s system.\n\nThis Programming Guide is designed to help customers get up-and-running with Vetty's background screening services, both by providing the necessary context to understand the background screening industry and its regulations, and by giving technical guidance on how to work with the Vetty API.\n\n### Rate limiting\nOur API is rate limited. The current limit is 200 requests per minute across all our endpoints. This rate may be adjusted for given endpoints\n\n### Webhooks\nWhenever an event occurs that would be relevant to your application, we'll submit a POST to your designated Webhook URL with information about the event. \n\nThe User-Agent for the requests will have the prefix Vetty-Webhook/\n\n### Pagination\nRequests that return multiple data, e.g. GET /v1/applicants, will be paginated to 20 items by default. You can specify further pages using the Page parameter and specify page size using the per page parameter.\n\n### Getting Started\n#### 1. Get Credentials\nContact your account representative to credentialed for running employment based background checks.<br>\n\n#### 2. Get API keys\nGet your keys from API section of your Client Dashboard. Copy your test key.  Productions keys won’t be enabled till you ask Vetty team to enable it.<br>\n\n#### 3. Basic Authentication\nUse HTTP Basic authentication to authenticate with your API key as the username and an empty password. When using curl, use the -u option to specify your API key.<br>\nAll test API requests are free and return test data.<br>\n\n#### 4. Create an Candidate Profile\nCreate a candidate by passing required information to Vetty.  Every candidate has a profile. And profile is populated with data from Candidate and Report.\n\nUse the  curl command ( choose the one with correct programming language) on the right, replace API with your given sandbox token, and run it in your console to create a candidate \n\nIf you are using candidate invitation method, then only requirements are Candidates first name, last name and email. \t\nHowever if you want to design the Candidate Onboarding flow, the following parameters- first name, last name, middle name or no middle name, dob.\n\nFor requesting crim check, additional parameter of SSN is required. For MVR records, driver license and driver state is required.<br>\n\n#### 5. Create a candidate report\nWhenever a background check is run, it creates a report. A candidate ID can have multiple report IDs. Use your candidate ID and API key to create a report.\n\nFor a report, you need candidate profile ID, package ID. Each package has at least one Check ID. A report will include all check ids in that package ID\n\nThe following objects are in a report- Candidate Profile ID, Object Type (e.g. Renewal Report), URI, status, create date, completed date, adjudication ( hire, adverse action), document ids, ssn trace id, nat crim id, sex offender id, watchlist id, county crim id, employment verification id, education verification id, mvr id,….<br>\n\n#### 6. Webhook\nVetty  pushes a status change webhook event to the customer account's webhook URL. \nUse the resulting Report status (or other data elements) to execute subsequent workflows in your application or program.\n\nWebhook response objects-  ID, Candidate Profile ID, Object (e.g. event)  , type, Create dt, received date. Status ( e.g clear) , package ID, ssn trace id, ……<br>\n\n#### 7. Getting report back\nRetrieve the results of a report by performing a GET request to the specific URL of the report. Use API Key, Report ID\n"
 servers:
   - url: 'https://demo.api.vetty.co'
     description: Demo
@@ -17,11 +14,10 @@ servers:
     description: Prod
 tags:
   - name: applicant
-  - name: document
 paths:
   /applicants:
     post:
-      summary: ''
+      summary: Create an applicant
       operationId: create-applicant
       responses:
         '200':
@@ -32,6 +28,12 @@ paths:
                 $ref: '#/components/schemas/Applicant'
         '400':
           description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
       tags:
         - applicant
       description: Represents a background check invitation. The applicant will receive an email to submit their information.
@@ -42,17 +44,107 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Applicant'
+    get:
+      summary: Get all applicants
+      operationId: get-applicants
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Applicant'
+      description: Get all the applicants
+      tags:
+        - applicant
+  '/applicants/{applicantId}':
+    parameters:
+      - schema:
+          type: string
+        name: applicantId
+        in: path
+        required: true
+        description: applicant id
+    get:
+      summary: Get Applicant
+      tags:
+        - applicant
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Applicant'
+      operationId: get-applicant-by-id
+      description: 'A single applicant can be retrieved by calling this endpoint along with the applicant’s unique identifier- whether SSN, Name, Passport Number'
+      security:
+        - API Key: []
+    patch:
+      summary: Update Applicant
+      operationId: update-applicant-by-id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Applicant'
+      description: Allows updating of an applicant’s information before any checks are created
+      tags:
+        - applicant
+    delete:
+      summary: Delete Applicant
+      operationId: delete-applicant-by-id
+      responses:
+        '200':
+          description: OK
+      description: |-
+        A single applicant can be deleted by calling this endpoint along with the applicant’s unique identifier.
+        NOTE: only applicants that don’t have any checks associated can be deleted. Trying to delete an applicant that has checks associated will result in a validation error.
+      tags:
+        - applicant
+  /packages:
+    get:
+      summary: Get all packages
+      tags:
+        - packages
+      responses: {}
+      operationId: get-packages
+    post:
+      summary: Create a package
+      operationId: post-packages
+      responses:
+        '200':
+          description: OK
+      tags:
+        - packages
+  '/packages/{packageId}':
+    parameters:
+      - schema:
+          type: string
+        name: packageId
+        in: path
+        required: true
+        description: package id
+    get:
+      summary: Retrieve a package
+      tags:
+        - packages
+      responses: {}
+      operationId: get-packages-packageId
 components:
   schemas:
     Applicant:
       title: Applicant
       type: object
+      description: "An\_applicant\_is the individual on who the check is being performed. To initiate a check an applicant must first be created. Applicants can be retrieved and listed."
       properties:
         id:
           type: string
-          description: |-
-            U
-            nique identifier for the applicant
+          description: Unique identifier for the applicant
           example: cdf2f5be-b67e-11ea-b3de-0242ac130004
         title:
           type: string
@@ -76,18 +168,101 @@ components:
           maxLength: 50
         last_name:
           type: string
-          description: "Applicant's last name"
+          description: "Applicant's surname"
           example: Doe
           minLength: 2
           maxLength: 50
+        created_at:
+          type: string
+          description: The date and time when the applicant was created
+          format: date-time
+          example: '2020-06-29T15:10:01+0000'
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+          description: "Applicant's email address"
+        gender:
+          type: string
+          enum:
+            - male
+            - female
+          example: male
+          description: Gender of the applicant
+        dob:
+          type: string
+          description: Date of birth of the applicant
+          example: 01/31/1990
+        phone:
+          type: string
+          description: "Applican't phone number"
+          example: 800-555-5555
+        ssn:
+          type: string
+          description: "Applican't SSN"
+          example: 111-11-1111
+        previous_last_name:
+          type: string
+          description: "Applican't previous surname"
+        addresses:
+          type: array
+          description: The address history of the applicant
+          items:
+            $ref: '#/components/schemas/Address'
       required:
         - title
         - first_name
         - last_name
-      description: "An applicant is the individual on who the check is being performed. To initiate a check an applicant must first be created. Applicants can be retrieved and listed."
+        - email
+        - gender
+        - dob
+        - phone
+        - ssn
+        - addresses
+    Address:
+      title: Address
+      type: object
+      properties:
+        apt_number:
+          type: string
+          description: Flat number of the address
+          example: '1234'
+        street:
+          type: string
+          description: The street of the applicant’s address. There is a 32-character limit on this field for UK addresses
+          example: Main St.
+        city:
+          type: string
+          description: The city of the applicant’s address
+          example: New York
+        state:
+          type: string
+          description: 'The address state. for example AK, CA, or TX.'
+          example: NY
+        country:
+          type: string
+          description: The 3 character ISO country code of this address.
+          example: USA
+        start_date:
+          type: string
+          description: The date the applicant started living at this address in yyyy-mm-dd format
+          format: date
+          example: '2011-01-01'
+        end_date:
+          type: string
+          description: 'The date the applicant left this address in yyyy-mm-dd format. If current residence, leave  blank'
+          example: '2015-12-31'
+      required:
+        - apt_number
+        - street
+        - city
+        - state
+        - country
+        - start_date
   securitySchemes:
     API Key:
       type: http
       scheme: basic
+      description: "Authentication to the API occurs via HTTP Auth. \nUse your API key as your basic auth username and an empty password. After sign up, you have access to your \"test\" API key. Test API requests are free and return fake data."
 security:
   - API Key - 1: []
